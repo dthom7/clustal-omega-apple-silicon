@@ -274,7 +274,7 @@ SquidIdPairDist(symmatrix_t *tmat, mseq_t *mseq,
  *
  */
 int
-PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPercID, 
+PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPercID,
               int istart, const unsigned long int iend,
               int jstart, const unsigned long int jend,
               char *fdist_in, char *fdist_out)
@@ -318,10 +318,10 @@ PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPerc
            hence making even chunk sizes is slightly fiddlier
            */
         ulTotalStepNo = iend*jend - iend*iend/2 + iend/2;
-        
+
         /* FIXME: can get rid of iChunkStart, iChunkEnd now that we're using the arrays */
         iChunkStart = iend;
-        for(iChunk = 0; iChunk <= iNumberOfThreads; iChunk++)
+        for(iChunk = 0; iChunk < iNumberOfThreads; iChunk++)
         {
             iChunkEnd = iChunkStart;
             if (iChunk == iNumberOfThreads - 1){
@@ -335,23 +335,23 @@ PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPerc
             }
             iChunkStarts[iChunk] = iChunkStart;
             iChunkEnds[iChunk] = iChunkEnd;
-            /*printf("%s:%d: C=%d, ie=%d, is=%d, je=%d, js=%d, Cstart=%d, Cend=%d, diff=%d\n", 
+            /*printf("%s:%d: C=%d, ie=%d, is=%d, je=%d, js=%d, Cstart=%d, Cend=%d, diff=%d\n",
                    __FILE__, __LINE__, iChunk, iend, istart, jend, jstart, iChunkStart, iChunkEnd, iChunkEnd-iChunkStart);*/
         }
 
         if (PAIRDIST_KTUPLE == pairdist_type) {
 
             Log(&rLog, LOG_INFO, "Calculating pairwise ktuple-distances...");
-            
+
             NewProgress(&prProgress, LogGetFP(&rLog, LOG_INFO),
-                        "Ktuple-distance calculation progress", bPrintCR); 
+                        "Ktuple-distance calculation progress", bPrintCR);
 #ifdef HAVE_OPENMP
             #pragma omp parallel for private(iChunk) schedule(dynamic)
 #endif
             for(iChunk = 0; iChunk < iNumberOfThreads; iChunk++)
             {
-                KTuplePairDist((*distmat), mseq, iChunkStarts[iChunk], 
-                    iChunkEnds[iChunk], jstart, jend, NULL, prProgress, 
+                KTuplePairDist((*distmat), mseq, iChunkStarts[iChunk],
+                    iChunkEnds[iChunk], jstart, jend, NULL, prProgress,
                     &ulStepNo, ulTotalStepNo);
             }
 
@@ -404,7 +404,7 @@ PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPerc
     }
 #endif /* random/proper distance calculation */
 
-    
+
     /* optional printing of matrix to file
      */
     if (NULL != fdist_out) {
@@ -423,17 +423,14 @@ PairDistances(symmatrix_t **distmat, mseq_t *mseq, int pairdist_type, bool bPerc
     }
 
 #if 0
-#include "distance-distrib.h" 
+#include "distance-distrib.h"
 #endif
 
     if (NULL != prProgress) {
         ProgressDone(prProgress);
         FreeProgress(&prProgress);
     }
-    
+
     return 0;
 }
 /***   end: PairDistances()   ***/
-
-
-
